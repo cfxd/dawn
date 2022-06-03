@@ -1,0 +1,16 @@
+{%- liquid
+  assign cart_total                    = cart.total_price
+  assign threshold_in_cents            = settings.shipping_indicator_threshold | times: 100
+  assign shipping_progress_percentage  = cart_total | times: 1.0 | divided_by: threshold_in_cents | times: 100 | floor
+  assign remaining_amount              = cart_total | minus: threshold_in_cents | abs | money_without_trailing_zeros
+  assign remaining_amount_html         = '<span data-remaining>%%REMAINING%%</span>' | replace: '%%REMAINING%%', remaining_amount
+
+  if cart_total >= threshold_in_cents
+    assign shipping_progress_percentage = 100
+  endif
+-%}
+<shipping-indicator data-free="{% if cart_total >= threshold_in_cents %}true{% else %}false{% endif %}" data-threshold="{{ threshold_in_cents | escape }}" style="--indicator-width:{{ shipping_progress_percentage }}%;--indicator-color:{{ settings.shipping_indicator_color }};--indicator-color-free:{{ settings.shipping_indicator_color_free }}">
+  <p data-msg-free{% if cart_total < threshold_in_cents %} class="hide"{% endif %}>{{- 'general.free_shipping.free_shipping' | t -}}</p>
+  <p data-msg-progress{% if cart_total >= threshold_in_cents %} class="hide"{% endif %}>{{- 'general.free_shipping.free_shipping_remaining_html' | t: remaining_amount: remaining_amount_html -}}</p>
+  <div data-indicator>{{ shipping_progress_percentage }}%</div>
+</shipping-indicator>

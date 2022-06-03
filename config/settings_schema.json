@@ -4,8 +4,50 @@
     "theme_name": "Dawn",
     "theme_version": "5.0.0",
     "theme_author": "Shopify",
-    "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
-    "theme_support_url": "https://support.shopify.com/"
+    "theme_documentation_url": "https:\/\/help.shopify.com\/manual\/online-store\/themes",
+    "theme_support_url": "https:\/\/support.shopify.com\/"
+  },
+  {
+    "name": "Shipping indicator",
+    "settings": [
+      {
+        "type": "number",
+        "id": "shipping_indicator_threshold",
+        "label": "Free shipping threshold",
+        "default": 60,
+        "info": "Edit the wording for the shipping threshold @ Actions -> Edit languages"
+      },
+      {
+        "type": "color",
+        "id": "shipping_indicator_color",
+        "label": "Progress color",
+        "default": "#EEBC2C"
+      },
+      {
+        "type": "color",
+        "id": "shipping_indicator_color_free",
+        "label": "Progress color",
+        "default": "#2FA71A"
+      },
+      {
+        "type": "checkbox",
+        "id": "shipping_indicator_notification",
+        "label": "Display in cart notification",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "shipping_indicator_cart",
+        "label": "Display on cart page",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "shipping_indicator_drawer",
+        "label": "Display on cart drawer",
+        "default": true
+      }
+    ]
   },
   {
     "name": "t:settings_schema.colors.name",

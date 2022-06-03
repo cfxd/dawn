@@ -96,6 +96,16 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'))
         }
         this.disableLoading();
+
+        this.dispatchEvent(new CustomEvent('productQuantityUpdated', {
+          bubbles: true,
+          detail: {
+            body: body,
+            state: state,
+            name: name,
+          }
+        }));
+
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('cart-errors') || document.getElementById('CartDrawer-CartErrors');

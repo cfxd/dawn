@@ -52,6 +52,17 @@ if (!customElements.get('product-form')) {
           }
 
           this.error = false;
+
+          this.dispatchEvent(new CustomEvent('productAddedToCart', {
+            bubbles: true,
+            detail: {
+              config: config,
+              form: this.form,
+              formData: formData,
+              response: response,
+            }
+          }));
+
           const quickAddModal = this.closest('quick-add-modal');
           if (quickAddModal) {
             document.body.addEventListener('modalClosed', () => {
