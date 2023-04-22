@@ -64,6 +64,7 @@ class FacetFiltersForm extends HTMLElement {
         FacetFiltersForm.renderProductGridContainer(html);
         FacetFiltersForm.renderProductCount(html);
         if (typeof initializeScrollAnimationTrigger === 'function') initializeScrollAnimationTrigger(html.innerHTML);
+        publish(PUB_SUB_EVENTS.facetsRenderSection, { source: 'fetch' });
       });
   }
 
@@ -73,6 +74,7 @@ class FacetFiltersForm extends HTMLElement {
     FacetFiltersForm.renderProductGridContainer(html);
     FacetFiltersForm.renderProductCount(html);
     if (typeof initializeScrollAnimationTrigger === 'function') initializeScrollAnimationTrigger(html.innerHTML);
+    publish(PUB_SUB_EVENTS.facetsRenderSection, { source: 'cache' });
   }
 
   static renderProductGridContainer(html) {
@@ -178,6 +180,7 @@ class FacetFiltersForm extends HTMLElement {
 
   onSubmitHandler(event) {
     event.preventDefault();
+    publish(PUB_SUB_EVENTS.facetsOnSubmitHandler);
     const sortFilterForms = document.querySelectorAll('facet-filters-form form');
     if (event.srcElement.className == 'mobile-facets__checkbox') {
       const searchParams = this.createSearchParams(event.target.closest('form'));

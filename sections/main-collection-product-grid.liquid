@@ -7,6 +7,10 @@
   {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
 {%- endif -%}
 
+{%- if section.settings.infinite -%}
+  <script src="{{ 'infinite-scroll.pkgd.min.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
 {%- if section.settings.enable_quick_add -%}
   {{ 'quick-add.css' | asset_url | stylesheet_tag }}
   <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
@@ -14,6 +18,13 @@
 {%- endif -%}
 
 {%- style -%}
+  {% if section.settings.infinite %}
+    #shopify-section-{{ section.id }} .collection .pagination-wrapper {
+      display: none;
+      visibility: hidden;
+    }
+  {% endif %}
+
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
@@ -163,6 +174,7 @@
                   class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
                   {% if settings.animations_reveal_on_scroll %}
                     data-cascade
+                    style="--animation-order: {{ forloop.index }};"
                   {% endif %}
                 >
                   {% render 'card-product',
@@ -182,6 +194,13 @@
 
             {%- if paginate.pages > 1 -%}
               {% render 'pagination', paginate: paginate, anchor: '' %}
+              {%- if section.settings.infinite -%}
+                <div class="page-load-status">
+                  <p class="infinite-scroll-request">Loading...</p>
+                  <p class="infinite-scroll-last">End of content</p>
+                  <p class="infinite-scroll-error">No more pages to load</p>
+                </div>
+              {%- endif -%}
             {%- endif -%}
           </div>
         {%- endif -%}
@@ -193,11 +212,108 @@
   {%- endif -%}
 </div>
 
+{%- if section.settings.infinite -%}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const infScrollCache = sessionStorage.getItem('infScrollCache');
+
+      const sectionId = '#shopify-section-{{ section.id }}';
+      const selectors = {
+        gridEl:         `${sectionId} #product-grid`,
+        appendEl:       `${sectionId} #product-grid .grid__item`,
+        gridItem:       `#product-grid .grid__item`,
+        paginationList: `${sectionId} .pagination__list`,
+        nextPath:       `${sectionId} .pagination__list a.pagination__item--next`,
+        gridContainer:  `${sectionId} .product-grid-container`,
+        pageLoadStatus: `${sectionId} .page-load-status`,
+      };
+
+      function hasNextPathEl() {
+        const nextPathEl = document.querySelector(selectors.nextPath);
+        if(!nextPathEl) {
+          return false;
+        }
+        return true;
+      }
+    
+      function infScrollOnAppend(body, path, items, response) {
+        document.querySelector(selectors.paginationList).innerHTML = body.querySelector(selectors.paginationList).innerHTML;
+        if(!hasNextPathEl()) {
+          destroyInfScroll();
+        }
+      };
+
+      function infScrollOnClick(e) {
+        if(e.target && e.target.matches('#product-grid a')) {
+          const cacheHtml = new DOMParser().parseFromString(document.querySelector(selectors.gridContainer).innerHTML, 'text/html');
+          {% if settings.animations_reveal_on_scroll %}
+            cacheHtml.body.querySelectorAll(selectors.gridItem).forEach(el => el.className = 'grid__item');
+          {% endif %}
+          sessionStorage.setItem('infScrollCache', cacheHtml.body.innerHTML);
+        }
+      };
+
+      function destroyInfScroll() {
+        const infScrollInstance = InfiniteScroll.data(selectors.gridEl);
+        if(infScrollInstance) {
+          document.removeEventListener('click', infScrollOnClick);
+          infScrollInstance.lastPageReached();
+          infScrollInstance.off('append', infScrollOnAppend);
+          infScrollInstance.destroy();
+        }
+      }
+      
+      function createInfScroll() {
+        if(!hasNextPathEl()) {
+          document.querySelector(selectors.pageLoadStatus).style.display = 'none';
+          return;
+        }
+
+        const infScroll = new InfiniteScroll(selectors.gridEl, {
+          path: function() {
+            return document.querySelector(selectors.nextPath).getAttribute('href').replace('page=', 'section_id={{ section.id }}&page=');
+          },
+          append: selectors.appendEl,
+          status: selectors.pageLoadStatus,
+          history: false,
+          onInit: function() {
+            document.addEventListener('click', infScrollOnClick.bind(this));
+          },
+          debug: true,
+        });
+        infScroll.on('append', infScrollOnAppend);
+      };
+
+      const facetsOnSubmitHandler = subscribe(PUB_SUB_EVENTS.facetsOnSubmitHandler, () => {
+        destroyInfScroll();
+      });
+
+      const facetsRenderSection = subscribe(PUB_SUB_EVENTS.facetsRenderSection, () => {
+        createInfScroll();
+      });
+
+      if(infScrollCache) {
+        document.querySelector(selectors.gridContainer).innerHTML = infScrollCache;
+        sessionStorage.removeItem('infScrollCache');
+      }
+
+      createInfScroll();
+
+    });
+  </script>
+{%- endif -%}
+
 {% schema %}
 {
   "name": "t:sections.main-collection-product-grid.name",
   "class": "section",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "infinite",
+      "label": "Infinite scroll",
+      "default": true
+    },
     {
       "type": "range",
       "id": "products_per_page",
