@@ -105,6 +105,7 @@
               </div>
             {%- else -%}
               <div class="cart__ctas" {{ block.shopify_attributes }}>
+                <input type="text" name="attributes[TEST]" form="cart">
                 <button
                   type="submit"
                   id="checkout"
