@@ -4,6 +4,7 @@
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'component-discounts.css' | asset_url | stylesheet_tag }}
 {{ 'quantity-popover.css' | asset_url | stylesheet_tag }}
+{{ 'section-contact-form.css' | asset_url | stylesheet_tag }}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -24,6 +25,85 @@
 {%- endunless -%}
 
 <script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
+
+<script src="{{ 'qrcode.min.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'cart-form.js' | asset_url }}" defer="defer"></script>
+
+<cart-form class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="contact page-width page-width--narrow section-{{ section.id }}-padding">
+    {%- liquid
+      assign contact_form_class = 'isolate'
+      if settings.animations_reveal_on_scroll
+        assign contact_form_class = 'isolate scroll-trigger animate--slide-in'
+      endif
+      
+      assign cart_url = shop.url | append: routes.cart_url | append: '/'
+    -%}
+
+    {%- for item in cart.items -%}
+      {%- capture cart_items -%}{{ cart_items }}{{ item.variant.id }}:{{ item.quantity }}{%- unless forloop.last -%},{%- endunless -%}{%- endcapture -%}
+    {%- endfor -%}
+
+    <form class="{{ contact_form_class | strip }}" data-cart-url="{{ cart_url | escape }}">
+      <input type="hidden" name="fromEmail" value="{{ '"CFX" <michael@cfxdesign.com>' | escape }}">
+      <input type="hidden" name="cartUrl" value="{{ cart_url | append: cart_items | escape }}">
+      <div class="field">
+        <input
+          autocomplete="email"
+          type="email"
+          id="ContactForm-email"
+          class="field__input"
+          name="toEmail"
+          spellcheck="false"
+          autocapitalize="off"
+          aria-required="true"
+          placeholder="Email *"
+          required
+        >
+        <label class="field__label" for="ContactForm-email">
+          Email
+          <span aria-hidden="true">*</span>
+        </label>
+      </div>
+      <div class="field">
+        <input
+          class="field__input"
+          type="text"
+          id="ContactForm-subject"
+          name="subject"
+          placeholder="Subject"
+        >
+        <label class="field__label" for="ContactForm-subject">Subject (optional)</label>
+      </div>
+      <div class="field">
+        <textarea
+          rows="10"
+          id="ContactForm-body"
+          class="text-area field__input"
+          name="message"
+          placeholder="Message"
+        ></textarea>
+        <label class="form__label field__label" for="ContactForm-body">
+          Message (optional)
+        </label>
+      </div>
+      <div class="contact__button">
+        <button type="submit" class="button"{% if cart.item_count <= 0 %} aria-disabled="true"{% endif %}>
+          <span>Send</span>
+          {%- render 'loading-spinner' -%}
+        </button>
+      </div>
+      <div class="form__message">
+        <h2 class="form-status caption-large text-body" role="alert">
+          <span class="form-success hidden">{{- 'icon-success.svg' | inline_asset_content -}} Cart link sent!</span>
+          <span class="form-error hidden">{{- 'icon-error.svg' | inline_asset_content -}} Error sending cart link, please try again</span>
+          <span class="form-empty{% if cart.item_count > 0 %} hidden{% endif %}">{{- 'icon-error.svg' | inline_asset_content -}} The current cart is empty and cannot be sent</span>
+        </h2>
+      </div>
+      <div id="qrcode" class="hidden"></div>
+    </form>
+  </div>
+</cart-form>
 
 <cart-items class="gradient color-{{ section.settings.color_scheme }} isolate{% if cart == empty %} is-empty{% else %} section-{{ section.id }}-padding{% endif %}">
   <div class="page-width">
