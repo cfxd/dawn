@@ -1,5 +1,12 @@
 {
   "sections": {
+    "cart-form": {
+      "type": "cart-form",
+      "settings": {
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
     "cart-items": {
       "type": "main-cart-items",
       "settings": {
@@ -48,6 +55,7 @@
     }
   },
   "order": [
+    "cart-form",
     "cart-items",
     "cart-footer",
     "featured-collection"

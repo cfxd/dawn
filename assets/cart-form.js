@@ -63,14 +63,22 @@ if (!customElements.get('cart-form')) {
         formData.append('imageBase64', this.qrCodeEl?.querySelector('img')?.src?.split('base64,')[1]);
 
         try {
+          // const res = await fetch('https://n6pr6x554juo7ew5fy5ahnhvp40zdcqd.lambda-url.us-east-1.on.aws/', {  // this one sends WITHOUT an attachment
           const res = await fetch('https://r5uujk7wg4n7b4okbqzh2xfcd40ostsb.lambda-url.us-east-1.on.aws/', {
+            // this one sends WITH an attachment
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(Object.fromEntries(formData.entries())),
           });
-
+          /*
+          const res = await fetch(`https://webhooks.mechanic.dev/bb5994c8-3547-4e35-b395-95858abd37b2`, { // CFX LATEST URL
+          const res = await fetch(`https://webhooks.mechanic.dev/b1333491-e5fb-48db-bd09-908cecb9e661`, { // CFX PLAYGROUND URL
+            method: `POST`,
+            body: formData,
+          });
+*/
           if (res.ok) {
             this.form.querySelector('.form-success').classList.remove('hidden');
             this.form.reset();
@@ -80,7 +88,7 @@ if (!customElements.get('cart-form')) {
             console.error(`Error: ${data.error || 'Failed to send'}`);
           }
         } catch (err) {
-          console.error(err);
+          console.error(`Problem sending cart link email: ${err}`);
           this.form.querySelector('.form-error').classList.remove('hidden');
         } finally {
           this.spinnerEl.classList.add('hidden');
